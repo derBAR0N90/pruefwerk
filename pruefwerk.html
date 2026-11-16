@@ -252,6 +252,15 @@ svg.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;st
   .theme-mob{display:grid}
 }
 .hidden{display:none!important}
+.pwcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.pwcard{background:var(--surface);border:1.5px solid var(--line);border-radius:13px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.pwcard h4{margin:0;font-size:16px}.pwcard p{margin:0;color:var(--muted);font-size:13.5px}
+.pwact{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto}
+.pwsel{height:40px;border:1.5px solid var(--line);border-radius:9px;padding:0 10px;background:var(--surface);color:var(--ink);font:inherit;width:100%;box-sizing:border-box;text-transform:none;font-weight:400}
+.pwlbl{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase}
+#scanVideo{width:100%;max-width:520px;border-radius:11px;background:#000;margin:14px auto 0;display:none}
+.tblwrap .trow,.lrow{cursor:pointer}
+body.ro [data-write]{opacity:.45;pointer-events:none}
 </style>
 </head>
 <body>
@@ -665,7 +674,7 @@ svg.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;st
               </div>
               <div style="margin-top:9px"><span class="pill red"><i></i>2 überfällig</span> <span style="font-size:13px;color:var(--muted)">Prüfung läuft</span></div>
               <div class="locimg">
-                <img src="assets/baucon-lager.png" alt="Isometrische Illustration des BAUCON-Lagers mit Containern 1 und 2">
+                <img onerror="this.parentElement.style.display='none'" src="assets/baucon-lager.png" alt="Isometrische Illustration des BAUCON-Lagers mit Containern 1 und 2">
                 <span class="locimgcap">Bauhof-Lager · Container A + B</span>
               </div>
               <div class="facts">
@@ -757,11 +766,24 @@ svg.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;st
       <!-- Mehr / Profil placeholder -->
       <section class="view" data-view="mehr">
         <div class="phead"><div><h2>Mehr</h2><div class="sub">Einstellungen, Export, Rollen</div></div></div>
-        <div style="background:var(--surface);border:1.5px solid var(--line);border-radius:13px;padding:24px;color:var(--muted)">In Vorbereitung – Rollen (Prüfer, Verwaltung, Auditor) und Export (CSV/PDF) werden hier zusammengeführt.</div>
+        <div class="pwcards">
+          <div class="pwcard"><h4>Export</h4><p>Daten als CSV für Excel oder als PDF-Report.</p><div class="pwact"><button class="btn sm" id="mxDev">Geräte (CSV)</button><button class="btn sm" id="mxPruef">Prüfungen (CSV)</button><button class="btn sm" data-view="pdf">Protokoll (PDF)</button></div></div>
+          <div class="pwcard"><h4>Rolle</h4><p>Bestimmt, welche Aktionen verfügbar sind. Auditoren haben nur Lesezugriff.</p><select id="mRole" class="pwsel"><option>Prüfer</option><option>Verwaltung</option><option>Auditor</option></select></div>
+          <div class="pwcard"><h4>Prüfintervall (Standard)</h4><p>Bestimmt den vorgeschlagenen nächsten Prüftermin.</p><select id="mInt" class="pwsel"><option value="6">6 Monate</option><option value="12" selected>12 Monate</option><option value="24">24 Monate</option></select></div>
+          <div class="pwcard"><h4>Lokale Daten</h4><p>Einstellungen und Profil in diesem Browser zurücksetzen.</p><div class="pwact"><button class="btn sm" id="mReset">Zurücksetzen</button></div></div>
+          <div class="pwcard"><h4>Über PrüfWerk</h4><p>Version 1.0 · Prüfung elektrischer Betriebsmittel nach DGUV V3 / DIN VDE 0701-0702.</p></div>
+        </div>
       </section>
       <section class="view" data-view="profil">
         <div class="phead"><div><h2>Profil</h2><div class="sub">M. Weber · Prüfer</div></div></div>
-        <div style="background:var(--surface);border:1.5px solid var(--line);border-radius:13px;padding:24px;color:var(--muted)">Profil, Theme und Offline-Sync-Status.</div>
+        <div class="pwcards">
+          <form class="pwcard" id="profForm"><h4>Persönliche Daten</h4>
+            <label class="pwlbl">Name<input class="pwsel" name="name" value="M. Weber" required></label>
+            <label class="pwlbl">Qualifikation<input class="pwsel" name="qual" value="befähigte Person"></label>
+            <div class="pwact"><button class="btn sm primary" type="submit">Speichern</button></div></form>
+          <div class="pwcard"><h4>Darstellung</h4><p>Hell- oder Dunkelmodus.</p><div class="pwact"><button class="btn sm" id="pLight">Hell</button><button class="btn sm" id="pDark">Dunkel</button></div></div>
+          <div class="pwcard"><h4>Offline-Sync</h4><p id="pSync">3 Entwürfe warten auf Synchronisierung · lokaler Stand 09:12 Uhr</p><div class="pwact"><button class="btn sm" id="pSyncBtn">Jetzt synchronisieren</button></div></div>
+        </div>
       </section>
       <section class="view" data-view="scan">
         <div class="phead"><div><h2>Scannen</h2><div class="sub">Etikett mit der Kamera erfassen</div></div><div class="sp"></div><button class="btn sm primary" data-view="pruefung">Prüfung starten</button></div>
@@ -825,7 +847,7 @@ function showView(name){
   window.scrollTo(0,0);
 }
 document.addEventListener('click', (e)=>{
-  const el = e.target.closest('[data-view]');
+  const el = e.target.closest('[data-view]:not(section)');
   if(el && el.dataset.view){ showView(el.dataset.view); }
 });
 
@@ -857,7 +879,7 @@ function renderStep(){
   else { prevBtn.onclick = ()=> { step--; renderStep(); }; }
   if(step===3){
     nextBtn.textContent = 'Abschließen ✓';
-    nextBtn.onclick = ()=> { showView('pdf'); step=1; renderStep(); };
+    nextBtn.onclick = ()=> { if(window.pwFinish) window.pwFinish(); showView('pdf'); step=1; renderStep(); };
   } else {
     nextBtn.textContent = 'Weiter zu Schritt '+(step+1)+' ›';
     nextBtn.onclick = ()=> { step++; renderStep(); };
@@ -978,6 +1000,351 @@ if(periodCustomBtn){
 }
 const reportBtn = document.getElementById('reportBtn');
 if(reportBtn){ reportBtn.addEventListener('click', ()=> showView('pdf')); }
+</script>
+<script>
+
+// Ergänzende Bedienlogik für zuvor noch nicht verdrahtete Demo-Aktionen
+(()=>{
+  const $ = (sel, ctx=document) => ctx.querySelector(sel);
+  const $$ = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
+  const norm = v => (v||'').toLocaleLowerCase('de');
+  const toast = msg => {
+    let el=$('#pwToast');
+    if(!el){
+      el=document.createElement('div'); el.id='pwToast';
+      Object.assign(el.style,{position:'fixed',bottom:'82px',right:'18px',zIndex:9999,
+        background:'var(--dark)',color:'#fff',padding:'11px 16px',borderRadius:'10px',
+        boxShadow:'0 8px 24px rgba(0,0,0,.25)',fontSize:'14px',maxWidth:'min(420px, calc(100vw - 36px))'});
+      document.body.appendChild(el);
+    }
+    el.textContent=msg; el.style.display='block';
+    clearTimeout(el._timer); el._timer=setTimeout(()=>el.style.display='none',2800);
+  };
+  const modal = (title, body, onSave, saveLabel='Speichern') => {
+    const old=$('#pwModal'); if(old) old.remove();
+    const wrap=document.createElement('div'); wrap.id='pwModal';
+    Object.assign(wrap.style,{position:'fixed',inset:0,zIndex:10000,background:'rgba(0,0,0,.48)',
+      display:'grid',placeItems:'center',padding:'16px'});
+    wrap.innerHTML=`<div role="dialog" aria-modal="true" style="width:min(480px,100%);max-height:90vh;overflow:auto;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)">
+      <div style="padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px"><b style="font-size:17px">${title}</b><button type="button" data-close style="margin-left:auto;border:0;background:none;color:var(--muted);font-size:22px;cursor:pointer">×</button></div>
+      <form id="pwModalForm" style="padding:18px;display:flex;flex-direction:column;gap:12px">${body}
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:6px"><button type="button" class="btn sm" data-close>Abbrechen</button><button type="submit" class="btn sm primary">${saveLabel}</button></div>
+      </form></div>`;
+    document.body.appendChild(wrap);
+    wrap.addEventListener('click',e=>{if(e.target===wrap||e.target.closest('[data-close]'))wrap.remove()});
+    $('#pwModalForm',wrap).addEventListener('submit',e=>{e.preventDefault(); if(onSave && onSave(new FormData(e.currentTarget))!==false)wrap.remove()});
+    $('input',wrap)?.focus();
+  };
+  const field=(label,name,value='',type='text')=>`<label class="field"><span style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase">${label}</span><input name="${name}" type="${type}" value="${String(value).replaceAll('"','&quot;')}" required style="height:42px;border:1.5px solid var(--line);border-radius:9px;padding:0 10px;background:var(--surface);color:var(--ink);font:inherit"></label>`;
+
+  // Einheitliche Suche: Kopfzeile und Geräteansicht
+  const searchInputs=$$('input').filter(i=>i.id==='q'||i.placeholder?.includes('suchen'));
+  searchInputs.forEach(inp=>inp.addEventListener('input',()=>{
+    const q=norm(inp.value);
+    searchInputs.filter(x=>x!==inp).forEach(x=>{if(x.value!==inp.value)x.value=inp.value});
+    const deviceSection=$('.view[data-view="geraete"]');
+    if(deviceSection){
+      $$('#cardsView .row',deviceSection).forEach(r=>r.style.display=norm(r.textContent).includes(q)?'':'none');
+      $$('#tableView .trow',deviceSection).forEach(r=>r.style.display=norm(r.textContent).includes(q)?'':'none');
+    }
+    $$('.view[data-view="overview"] .row').forEach(r=>r.style.display=norm(r.textContent).includes(q)?'':'none');
+  }));
+
+  // CSV-Export der sichtbaren Geräteliste
+  const csvEscape=v=>'"'+String(v??'').replaceAll('"','""')+'"';
+  $$('button').filter(b=>norm(b.textContent).includes('export csv')).forEach(btn=>btn.addEventListener('click',()=>{
+    const rows=[['Etikett','Gerät','Details']];
+    $$('#cardsView .row').filter(r=>r.style.display!=='none').forEach(r=>{
+      rows.push([$('.id',r)?.textContent,$('.rt',r)?.textContent,$('.rs',r)?.textContent]);
+    });
+    const csv='\uFEFF'+rows.map(r=>r.map(csvEscape).join(';')).join('\r\n');
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const a=document.createElement('a');a.href=url;a.download='pruefwerk-betriebsmittel.csv';a.click();URL.revokeObjectURL(url);
+    toast('CSV-Export wurde erstellt.');
+  }));
+
+  // Neu anlegen: lokaler Demo-Datensatz in der Kartenliste
+  $$('button').filter(b=>b.textContent.trim()==='Neu').forEach(btn=>btn.addEventListener('click',()=>{
+    modal('Neues Betriebsmittel',field('Etikett-ID','id','PW-1005')+field('Gerätebezeichnung','name')+field('Standort','site','Bauhof'),fd=>{
+      const list=$('#cardsView .list'); if(!list)return;
+      const row=document.createElement('div');row.className='row';
+      row.innerHTML=`<div class="rmain"><div class="id"></div><div class="rt"></div><div class="rs"></div></div><div class="rmeta"><span class="pill grey">Neu</span><div class="due">Noch nicht geprüft</div></div><span>›</span>`;
+      $('.id',row).textContent=fd.get('id');$('.rt',row).textContent=fd.get('name');$('.rs',row).textContent=fd.get('site')+' · neu angelegt';
+      list.prepend(row);toast('Betriebsmittel lokal hinzugefügt.');
+    });
+  }));
+
+  // Standort anlegen
+  $$('button').filter(b=>b.textContent.trim()==='Standort').forEach(btn=>btn.addEventListener('click',()=>{
+    modal('Standort hinzufügen',field('Standortname','name')+field('Beschreibung','desc','Neuer Standort'),fd=>{
+      const wrap=$('.locwrap'); if(!wrap)return;
+      const row=document.createElement('div');row.className='lrow';
+      row.innerHTML='<span style="color:var(--acc)">●</span><div style="flex:1;min-width:0"><div class="lname"></div><div class="lmeta"></div></div><div style="width:88px;font-weight:700">0</div><div style="width:78px">—</div><div style="width:96px">—</div>';
+      $('.lname',row).textContent=fd.get('name');$('.lmeta',row).textContent=fd.get('desc');wrap.appendChild(row);
+      toast('Standort lokal hinzugefügt.');
+    });
+  }));
+
+  // Standort-/Status-Chips filtern die sichtbaren Geräte (Demo)
+  const deviceChips=$$('.view[data-view="geraete"] .chips .chip');
+  deviceChips.forEach(chip=>chip.addEventListener('click',()=>{
+    const t=norm(chip.textContent);
+    const rows=$$('#cardsView .row');
+    rows.forEach(r=>{
+      const content=norm(r.textContent);
+      let ok=true;
+      if(t.includes('werkstatt'))ok=content.includes('werkstatt');
+      else if(t.includes('bauhof'))ok=content.includes('bauhof');
+      else if(t.includes('überfällig')||t.includes('status'))ok=content.includes('überfällig')||content.includes('nicht bestanden');
+      else if(t.includes('klasse'))ok=content.includes('klasse 1')||content.includes('klasse 2');
+      r.style.display=ok?'':'none';
+    });
+  }));
+
+  // Geräte-Zeilen führen zu einer aufklappbaren Detailansicht in der Tabelle
+  $$('#cardsView .row').forEach(row=>row.addEventListener('dblclick',()=>{showView('geraete');if(seg)seg.querySelector('[data-seg="table"]')?.click();}));
+  // Schließen der Detailpanels
+  $$('.pclose').forEach(x=>x.addEventListener('click',()=>{
+    const panel=x.closest('.panel'); if(panel){panel.style.display='none';toast('Detailansicht geschlossen.');}
+  }));
+  // Bearbeiten der ausgewählten Tabellenzeile
+  $$('button').filter(b=>b.textContent.trim()==='Bearbeiten').forEach(btn=>btn.addEventListener('click',()=>{
+    const panel=btn.closest('.panel');const id=$('.ptitle .id',panel)?.textContent||'455411270';const name=$('.ptitle h4',panel)?.textContent||'Betriebsmittel';
+    modal('Betriebsmittel bearbeiten',field('Etikett-ID','id',id)+field('Gerätebezeichnung','name',name),fd=>{
+      $('.ptitle .id',panel).textContent=fd.get('id');$('.ptitle h4',panel).textContent=fd.get('name');toast('Änderungen lokal übernommen.');
+    });
+  }));
+
+  // Filter-Chips in Übersicht und Standorten: Statuszählung/Ansicht umschalten
+  $$('.view[data-view="overview"] .chips .chip').forEach(c=>c.addEventListener('click',()=>{
+    const group=c.parentElement;$$('.chip',group).forEach(x=>x.classList.remove('on'));c.classList.add('on');
+    const label=norm(c.textContent);
+    const rows=$$('.view[data-view="overview"] .row');
+    rows.forEach(r=>r.style.display=label.includes('überfällig')?(/überfällig|nicht bestanden/i.test(r.textContent)?'':'none'):label.includes('fällig')?(/fällig/i.test(r.textContent)?'':'none'):'');
+  }));
+
+  // Offline-Synchronisierung und Benachrichtigungen
+  $$('.notice .act').forEach(a=>{a.style.cursor='pointer';a.addEventListener('click',()=>toast('Keine Verbindung verfügbar. 3 Entwürfe bleiben lokal gespeichert.'))});
+  $$('button[aria-label="Benachrichtigungen"]').forEach(b=>b.addEventListener('click',()=>modal('Benachrichtigungen','<p style="margin:0">3 Prüfentwürfe warten auf Synchronisierung.</p><p style="margin:0;color:var(--muted)">Offline-Modus aktiv · Letzter lokaler Stand 09:12 Uhr</p>',()=>true,'Schließen')));
+
+  // Scannen: echte Kamera ist in dieser Offline-Demo nicht eingebunden, ID kann manuell eingegeben werden
+  $$('.view[data-view="scan"] button[data-view="pruefung"]').forEach(btn=>btn.addEventListener('contextmenu',e=>e.preventDefault()));
+  const scanView=$('.view[data-view="scan"]');
+  if(scanView){
+    const placeholder=scanView.querySelector('div[style*="text-align:center"]');
+    if(placeholder){
+      const b=document.createElement('button');b.className='btn sm';b.textContent='Etikett-ID manuell eingeben';b.style.marginTop='14px';
+      b.addEventListener('click',()=>modal('Etikett erfassen',field('Etikett-ID','id','455411270'),fd=>{
+        const id=fd.get('id');const sub=$('.view[data-view="pruefung"] .phead .sub');if(sub)sub.textContent='Schritt 1 von 3 · Gerät '+id;
+        toast('Etikett '+id+' übernommen.');showView('pruefung');
+      },'Übernehmen'));
+      placeholder.appendChild(b);
+    }
+  }
+
+  // Wizard: Ergebnis, Abschluss und Protokollanzeige
+  let result='ok';
+  $$('.choice').forEach(c=>c.addEventListener('click',()=>{result=c.dataset.res||'ok'}));
+  const finish=$('#nextBtn');
+  if(finish){
+    finish.addEventListener('click',()=>{
+      if(step===3){
+        const docResult=$('.doc .result');
+        if(docResult){
+          docResult.innerHTML=result==='ok'?'✓ Bestanden – das Betriebsmittel darf weiter betrieben werden.':'✕ Nicht bestanden – Betriebsmittel bis zur Mängelbeseitigung außer Betrieb nehmen.';
+          docResult.style.background=result==='ok'?'#eaf6ee':'#fdecea';
+          docResult.style.color=result==='ok'?'#16803c':'#c62828';
+        }
+      }
+    }, true);
+  }
+  $$('button').filter(b=>b.textContent.trim()==='Neu prüfen').forEach(b=>b.addEventListener('click',()=>{step=1;renderStep();showView('pruefung')}));
+  // Zeitraum: ungültige Datumsbereiche abfangen
+  if($('#periodApply'))$('#periodApply').addEventListener('click',()=>{
+    const a=$('#periodFrom').value,b=$('#periodTo').value;
+    if(a&&b&&a>b){toast('Das Bis-Datum darf nicht vor dem Von-Datum liegen.');}
+  });
+  // Seitennavigation als Feedback, solange nur Beispieldaten vorliegen
+  $$('.tfoot button').forEach(b=>b.addEventListener('click',()=>toast('In dieser Demo sind nur die Beispieldatensätze geladen.')));
+  window.pwToast=toast; window.pwModal=modal; window.pwField=field;
+  // Avatarklick führt zum Profil
+  $('.ava')?.addEventListener('click',()=>showView('profil'));
+})();
+
+</script>
+<script>
+// Fertigstellung: restliche Buttons, Auswahl, Protokoll, Mehr/Profil, Kamera
+(()=>{
+  const $=(s,c=document)=>c.querySelector(s), $$=(s,c=document)=>[...c.querySelectorAll(s)];
+  const toast=window.pwToast, modal=window.pwModal, field=window.pwField;
+  const store={get(k,d){try{const v=localStorage.getItem('pw_'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+               set(k,v){try{localStorage.setItem('pw_'+k,JSON.stringify(v))}catch(e){}}};
+  const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const today=()=>{const d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()};
+  const addMonths=(de,m)=>{const p=de.split('.');if(p.length!==3)return de;const d=new Date(+p[2],+p[1]-1+m,+p[0]);return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear()};
+  const num=v=>parseFloat(String(v).replace(',','.'));
+  const wiz=$('.view[data-view="pruefung"]');
+  const wizInputs=()=>{const i=$$('.step input, .step textarea',wiz);return{art:i[0],datum:i[1],pruefer:i[2],ort:i[3],rpe:i[4],riso:i[5],ub:i[6],ipe:i[7],bem:i[8],next:i[9]}};
+  const dev={id:'455411270',name:'KT 33m 3×2,5mm² H07RN-F',site:'Bauhof',cls:'Klasse 1'};
+
+  function setDevice(id,name,site){
+    dev.id=id||dev.id; dev.name=name||dev.name; dev.site=site||dev.site;
+    const box=$('.step[data-step="1"] .fbody > div',wiz);
+    if(box){ box.querySelector('div[style*="flex:1"] > div').textContent=dev.id+' · '+dev.name;
+      box.querySelector('div[style*="font-size:12.5px"]').textContent=dev.site+' · '+dev.cls+' · erfasst '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr'; }
+    const sub=$('.phead .sub',wiz); if(sub && sub.lastChild) sub.lastChild.textContent=' von 3 · Gerät '+dev.id;
+    const w=wizInputs(); if(w.ort) w.ort.value=dev.site;
+  }
+
+  // Prüfung aus Kontext starten: Gerät aus dem jeweiligen Panel übernehmen
+  document.addEventListener('click',e=>{
+    const b=e.target.closest('button[data-view="pruefung"], button');
+    if(!b) return;
+    if(b.dataset.view==='pruefung'){
+      const panel=b.closest('.panel');
+      if(panel && panel.closest('[data-view="geraete"]')) setDevice($('.ptitle .id',panel).textContent.trim(),$('.ptitle h4',panel).textContent.trim());
+      step=1; renderStep();
+    }
+  },true);
+  $$('button').filter(b=>b.textContent.trim()==='Neu prüfen').forEach(b=>b.addEventListener('click',()=>{
+    const p=b.closest('.panel'); setDevice($('.ptitle h4',p).textContent.trim(), p.dataset.name, p.dataset.site);
+  }));
+
+  // „Ändern“ im Schritt 1
+  $$('button',wiz).filter(b=>b.textContent.trim()==='Ändern').forEach(b=>b.addEventListener('click',()=>{
+    modal('Gerät ändern',field('Etikett-ID','id',dev.id)+field('Gerätebezeichnung','name',dev.name)+field('Standort','site',dev.site),fd=>{
+      setDevice(fd.get('id'),fd.get('name'),fd.get('site')); toast('Gerät '+fd.get('id')+' übernommen.');
+    },'Übernehmen');
+  }));
+
+  // Nächster Prüftermin aus Prüfdatum + Intervall
+  const updNext=()=>{const w=wizInputs(); if(w.datum&&w.next) w.next.value=addMonths(w.datum.value,+store.get('interval',12));};
+  wizInputs().datum?.addEventListener('change',updNext);
+
+  // Abschluss: Protokoll befüllen + Eintrag in Prüfungen
+  let result='ok';
+  $$('.choice',wiz).forEach(c=>c.addEventListener('click',()=>{result=c.dataset.res||'ok'}));
+  window.pwFinish=()=>{
+    const w=wizInputs(), doc=$('.doc'); if(!doc) return;
+    const v=k=>w[k]?w[k].value.trim():'';
+    const okRpe=num(v('rpe'))<=0.30, okIso=num(v('riso'))>=1.0, okUb=num(v('ub'))<=25;
+    const dd=$$('dl.kv dd',doc);
+    const set=(i,t)=>{if(dd[i])dd[i].textContent=t};
+    set(0,dev.id);set(1,dev.name);set(3,dev.site);set(6,v('art')+' (DGUV V3)');set(9,v('datum'));set(10,v('pruefer')+' ( '+store.get('profile',{qual:'befähigte Person'}).qual+' )');set(11,v('next'));
+    const tds=$$('tbody tr',doc);
+    const row=(i,val,ok)=>{const c=tds[i]?.children;if(c){c[2].textContent=val;if(ok!==undefined)c[3].textContent=ok?'Bestanden':'Nicht bestanden'}};
+    row(0,v('rpe')+' Ω',okRpe);row(1,v('riso')+' MΩ',okIso);row(2,v('ub')+' V',okUb);row(3,v('ipe')+' A');
+    const r=$('.result',doc), ok=result==='ok';
+    r.innerHTML=ok?'✓ Bestanden – das Betriebsmittel darf weiter betrieben werden.':'✕ Nicht bestanden – Betriebsmittel bis zur Mängelbeseitigung außer Betrieb nehmen.';
+    r.style.background=ok?'#eaf6ee':'#fdecea'; r.style.color=ok?'#16803c':'#c62828';
+    const bem=r.nextElementSibling; if(bem) bem.textContent='Bemerkung: '+(v('bem')||'—');
+    const sig=$('.sig .line',doc); if(sig) sig.innerHTML='Prüfer · '+esc(v('pruefer'))+'<br><span style="font-size:11px;color:#9aa1ac">'+esc(v('datum'))+'</span>';
+    const sub=$('.view[data-view="pdf"] .phead .sub'); if(sub) sub.textContent='DGUV V3 · '+dev.id+' · '+v('datum');
+    if(ok && (!okRpe||!okIso||!okUb)) toast('Hinweis: Mindestens ein Messwert liegt außerhalb des Sollwerts.');
+    // in Prüfungsliste eintragen
+    const tbl=$('.view[data-view="pruefungen"] .tblwrap'), head=$('.thead',tbl);
+    if(tbl&&head){
+      const tr=document.createElement('div'); tr.className='trow';
+      tr.dataset.name=dev.name; tr.dataset.site=dev.site;
+      tr.innerHTML=`<span style="width:104px">${esc(v('datum'))}</span><span class="tcol">${esc(dev.id)} <span style="font-size:12px;color:var(--muted)">· ${esc(dev.name)}</span></span><span style="width:104px">${esc(v('pruefer'))}</span><span style="width:96px">${esc(v('rpe'))}</span><span style="width:110px">${esc(v('riso'))}</span><span style="width:120px"><span class="pill ${ok?'green':'red'}"><i></i>${ok?'Bestanden':'Nicht best.'}</span></span>`;
+      head.after(tr);
+    }
+    toast('Prüfung abgeschlossen – Protokoll erzeugt.');
+  };
+
+  // Prüfungen: Zeile auswählen -> Detailpanel
+  const pv=$('.view[data-view="pruefungen"]'), ppanel=$('.panel',pv);
+  pv && $('.tblwrap',pv).addEventListener('click',e=>{
+    const r=e.target.closest('.trow'); if(!r) return;
+    $$('.trow',pv).forEach(x=>x.classList.remove('sel')); r.classList.add('sel');
+    const c=r.children, id=c[1].childNodes[0].textContent.trim(), name=(c[1].querySelector('span')?.textContent||'').replace(/^·\s*/,'');
+    ppanel.style.display=''; ppanel.dataset.name=name; ppanel.dataset.site=r.dataset.site||'Bauhof';
+    $('.ptitle .id',ppanel).textContent='Protokoll · '+c[0].textContent.trim();
+    $('.ptitle h4',ppanel).textContent=id;
+    const pill=c[5].querySelector('.pill'), line=$('.ptitle',ppanel).nextElementSibling;
+    line.innerHTML=(pill?pill.outerHTML:'')+` <span style="font-size:13px;color:var(--muted)">R_PE ${esc(c[3].textContent.trim())} Ω · R_ISO ${esc(c[4].textContent.trim())} MΩ</span>`;
+    const fv=$$('.fv',ppanel); fv[0].textContent=r.dataset.site||'Bauhof'; fv[1].textContent=c[2].textContent.trim();
+  });
+  // Geräte-Tabelle: geschlossenes Panel bei Auswahl wieder zeigen
+  $('#tableView')?.addEventListener('click',e=>{ if(e.target.closest('.trow')) { const p=$('#tableView .panel'); if(p) p.style.display=''; } });
+
+  // Standorte: Auswahl + Filter-Chips
+  const sv=$('.view[data-view="standorte"]'), spanel=$('.panel',sv);
+  const bindLoc=r=>r.addEventListener('click',()=>{
+    $$('.lrow',sv).forEach(x=>x.classList.remove('sel')); r.classList.add('sel'); spanel.style.display='';
+    const name=$('.lname',r).childNodes[0].textContent.trim(), cols=[...r.children].slice(-3).map(x=>x.textContent.trim());
+    $('.ptitle h4',spanel).innerHTML=esc(name)+' <span class="byb">für BAUCON</span>';
+    $('.ptitle .id',spanel).textContent=r.classList.contains('sub')?'Container':'Standort';
+    const fv=$$('.fv',spanel); fv[0].textContent=cols[0]; fv[1].textContent=r.classList.contains('sub')?'—':(name==='Bauhof'?'2 (A · B)':'0'); fv[2].textContent=cols[1]; fv[3].textContent=cols[2]==='—'||cols[2]==='–'?'—':cols[2]+'2026';
+    const img=$('.locimg',spanel); if(img) img.hidden=name!=='Bauhof';
+  });
+  sv && $$('.lrow',sv).forEach(bindLoc);
+  sv && new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>n.classList?.contains('lrow')&&bindLoc(n)))).observe($('.locwrap',sv),{childList:true});
+  sv && $$('.chips .chip',sv).forEach(c=>c.addEventListener('click',()=>{
+    $$('.chips .chip',sv).forEach(x=>x.classList.toggle('on',x===c));
+    const t=c.textContent.toLowerCase();
+    $$('.lrow',sv).forEach(r=>{
+      const red=!!r.querySelector('.pill.red'), amb=!!r.querySelector('.pill.amber');
+      r.style.display=t.includes('überfällig')?(red?'':'none'):t.includes('fällig')?(red||amb?'':'none'):t.includes('geprüft')?(!red&&!amb?'':'none'):'';
+    });
+  }));
+
+  // CSV-Hilfe
+  const dl=(name,rows)=>{const csv='﻿'+rows.map(r=>r.map(v=>'"'+String(v??'').trim().replaceAll('"','""')+'"').join(';')).join('\r\n');
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast(name+' wurde erstellt.');};
+  $('#mxDev')?.addEventListener('click',()=>dl('pruefwerk-betriebsmittel.csv',[['Etikett','Gerät','Details'],...$$('#cardsView .row').map(r=>[$('.id',r)?.textContent,$('.rt',r)?.textContent,$('.rs',r)?.textContent])]));
+  $('#mxPruef')?.addEventListener('click',()=>dl('pruefwerk-pruefungen.csv',[['Datum','Betriebsmittel','Prüfer','R_PE (Ω)','R_ISO (MΩ)','Ergebnis'],...$$('.view[data-view="pruefungen"] .tblwrap .trow').map(r=>[...r.children].map(c=>c.textContent.replace(/\s+/g,' ')))]));
+
+  // Rolle & Intervall
+  const role=$('#mRole'), intv=$('#mInt');
+  const applyRole=v=>{document.body.classList.toggle('ro',v==='Auditor'); const s=$('.view[data-view="profil"] .phead .sub'); if(s) s.textContent=store.get('profile',{name:'M. Weber'}).name+' · '+v;};
+  $$('button').filter(b=>/^(Neu|Standort|Bearbeiten|Ändern|Neu prüfen|Neue Prüfung|Prüfung starten|Etikett scannen|Scannen)$/.test(b.textContent.trim())).forEach(b=>b.dataset.write='');
+  if(role){ role.value=store.get('role','Prüfer'); applyRole(role.value); role.addEventListener('change',()=>{store.set('role',role.value);applyRole(role.value);toast('Rolle: '+role.value);}); }
+  if(intv){ intv.value=String(store.get('interval',12)); intv.addEventListener('change',()=>{store.set('interval',+intv.value);updNext();toast('Standard-Prüfintervall: '+intv.value+' Monate');}); }
+  $('#mReset')?.addEventListener('click',()=>modal('Lokale Daten zurücksetzen','<p style="margin:0">Profil, Rolle, Intervall und Theme werden auf Standard gesetzt.</p>',()=>{
+    ['role','interval','profile','theme'].forEach(k=>{try{localStorage.removeItem('pw_'+k)}catch(e){}}); location.reload();},'Zurücksetzen'));
+
+  // Profil
+  const pf=$('#profForm');
+  const applyProfile=p=>{ const w=wizInputs(); if(w.pruefer) w.pruefer.value=p.name;
+    const ava=$('.ava'); if(ava) ava.textContent=p.name.replace(/[^A-Za-zÄÖÜäöüß ]/g,' ').split(/\s+/).filter(Boolean).map(x=>x[0]).join('').slice(0,2).toUpperCase()||'?';
+    applyRole(store.get('role','Prüfer')); };
+  if(pf){ const p=store.get('profile',null); if(p){pf.name.value=p.name;pf.qual.value=p.qual;applyProfile(p);}
+    pf.addEventListener('submit',e=>{e.preventDefault();const p={name:pf.name.value.trim(),qual:pf.qual.value.trim()};store.set('profile',p);applyProfile(p);toast('Profil gespeichert.');}); }
+  $('#pLight')?.addEventListener('click',()=>setTheme('light'));
+  $('#pDark')?.addEventListener('click',()=>setTheme('dark'));
+  const sync=()=>{ if(!navigator.onLine){toast('Keine Verbindung – Entwürfe bleiben lokal gespeichert.');return;}
+    const t=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    $('#pSync').textContent='Alle Entwürfe synchronisiert · '+t+' Uhr';
+    const n=$('.notice'); if(n) n.style.display='none'; $$('.ibtn.dot').forEach(b=>b.classList.remove('dot'));
+    $$('.bbar .note').forEach(x=>x.innerHTML='Alle Entwürfe synchronisiert<br>'+t+' Uhr');
+    toast('Synchronisierung abgeschlossen.'); };
+  $('#pSyncBtn')?.addEventListener('click',sync);
+  $$('.notice .act').forEach(a=>{const c=a.cloneNode(true);a.replaceWith(c);c.style.cursor='pointer';c.addEventListener('click',sync);});
+
+  // Scannen: Kamera mit Barcode-/QR-Erkennung (sofern vom Browser unterstützt)
+  const scan=$('.view[data-view="scan"]'), ph=scan && scan.querySelector('div[style*="text-align:center"]');
+  if(ph){
+    const vid=document.createElement('video'); vid.id='scanVideo'; vid.playsInline=true; vid.muted=true;
+    const cam=document.createElement('button'); cam.className='btn sm primary'; cam.textContent='Kamera starten'; cam.style.margin='14px 8px 0 0';
+    ph.insertBefore(cam, ph.querySelector('button')); ph.appendChild(vid);
+    let stream=null, timer=null;
+    const stop=()=>{clearInterval(timer);stream&&stream.getTracks().forEach(t=>t.stop());stream=null;vid.style.display='none';cam.textContent='Kamera starten';};
+    cam.addEventListener('click',async()=>{
+      if(stream){stop();return;}
+      if(!navigator.mediaDevices?.getUserMedia){toast('Kamera wird von diesem Browser nicht unterstützt – bitte ID manuell eingeben.');return;}
+      try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); }catch(e){toast('Kein Kamerazugriff – bitte ID manuell eingeben.');return;}
+      vid.srcObject=stream; vid.style.display='block'; await vid.play().catch(()=>{}); cam.textContent='Kamera stoppen';
+      if('BarcodeDetector' in window){
+        const det=new BarcodeDetector();
+        timer=setInterval(async()=>{ try{ const c=await det.detect(vid); if(c[0]){ const id=c[0].rawValue.trim(); stop(); setDevice(id); toast('Etikett '+id+' erkannt.'); step=1; renderStep(); showView('pruefung'); } }catch(e){} },400);
+      } else toast('Automatische Erkennung nicht verfügbar – ID bitte manuell eingeben.');
+    });
+    document.addEventListener('click',e=>{ const v=e.target.closest('[data-view]'); if(v && v.dataset.view!=='scan' && stream) stop(); });
+  }
+  // Manuelle Eingabe soll auch das Gerät im Assistenten setzen
+  document.addEventListener('submit',e=>{ if(e.target.id==='pwModalForm' && $('#pwModal b')?.textContent==='Etikett erfassen'){ setDevice(new FormData(e.target).get('id')); step=1; renderStep(); } },true);
+})();
 </script>
 </body>
 </html>
